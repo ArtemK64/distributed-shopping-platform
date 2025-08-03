@@ -1,0 +1,68 @@
+server:
+  port: 8082
+  tomcat:
+    use-apr: NEVER
+
+spring:
+  application:
+    name: inventory-service
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/inventorydb
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: kafka:29092
+    topic:
+      order-created: order-created
+      order-confirmed: order-confirmed
+      order-failed: order-failed
+    consumer:
+      group-id: inventory
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.inventoryservice.dto.event"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.inventoryservice.dto.event.OrderCreatedEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+logging:
+  level:
+    ROOT: INFO
+    org.springframework.kafka: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO
+
+management:
+  server:
+    port: 8082
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+  endpoint:
+    prometheus:
+      enabled: true

@@ -1,0 +1,15 @@
+* text=auto
+
+*.java  text diff=java
+*.yml   text
+*.yaml  text
+*.json  text
+*.xml   text
+*.md    text
+*.sh    text eol=lf
+*.ts    text
+*.vue   text
+
+* text=auto eol=lf
+
+* -text

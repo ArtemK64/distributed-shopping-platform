@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-notification-data
+      author: Artem
+
+      changes:
+
+        - insert:
+            tableName: delivery_channels
+            columns:
+              - column: { name: channel_type, value: "EMAIL" }
+
+        - insert:
+            tableName: notification_events
+            columns:
+              - column: { name: event_code, value: "ORDER_CONFIRMED" }
+              - column: { name: name, value: "Заказ подтвержден" }
+
+        - insert:
+            tableName: notification_events
+            columns:
+              - column: { name: event_code, value: "ORDER_FAILED" }
+              - column: { name: name, value: "Заказ не выполнен" }
+
+        - insert:
+            tableName: notification_templates
+            columns:
+              - column: { name: language_code, value: "ru" }
+              - column: { name: subject, value: "Ваш заказ подтвержден" }
+              - column: { name: body, value: "Здравствуйте! Ваш заказ #{orderId} успешно обработан. #{message}" }
+              - column: { name: version, valueNumeric: 1 }
+              - column: { name: event_id, valueNumeric: 1 }
+              - column: { name: channel_id, valueNumeric: 1 }
+
+        - insert:
+            tableName: notification_templates
+            columns:
+              - column: { name: language_code, value: "ru" }
+              - column: { name: subject, value: "Ваш заказ не может быть обработан" }
+              - column: { name: body, value: "Извините! Заказ #{orderId} не выполнен. Причина: #{message}" }
+              - column: { name: version, valueNumeric: 1 }
+              - column: { name: event_id, valueNumeric: 2 }
+              - column: { name: channel_id, valueNumeric: 1 }

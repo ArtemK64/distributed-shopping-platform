@@ -1,0 +1,28 @@
+:root {
+  --color-background: #ffffff;
+  --color-background-soft: #f8f8f8;
+  --color-background-mute: #f2f2f2;
+  --color-border: rgba(60, 60, 60, 0.12);
+  --color-heading: #2c3e50;
+  --color-text: #2c3e50;
+  --color-text-light-2: rgba(60, 60, 60, 0.66);
+  --color-input-background: #ffffff;
+  --color-input-text: #2c3e50;
+}
+
+:root[data-theme='dark'] {
+  --color-background: #181818;
+  --color-background-soft: #222222;
+  --color-background-mute: #282828;
+  --color-border: rgba(84, 84, 84, 0.48);
+  --color-heading: #ffffff;
+  --color-text: #f1f1f1;
+  --color-text-light-2: rgba(200, 200, 200, 0.64);
+  --color-input-background: #2a2a2a;
+  --color-input-text: #f1f1f1;
+}
+
+body {
+  color: var(--color-text);
+  background-color: var(--color-background);
+}

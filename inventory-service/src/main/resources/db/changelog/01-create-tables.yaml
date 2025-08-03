@@ -1,0 +1,279 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-create-manufacturers
+      author: Artem
+      changes:
+        - createTable:
+            tableName: manufacturers
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 02-create-categories
+      author: Artem
+      changes:
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 03-create-warehouses
+      author: Artem
+      changes:
+        - createTable:
+            tableName: warehouses
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: postal_code
+                  type: VARCHAR(12)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: house
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 04-create-suppliers
+      author: Artem
+      changes:
+        - createTable:
+            tableName: suppliers
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: postal_code
+                  type: VARCHAR(12)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: country
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: house
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 05-create-products
+      author: Artem
+      changes:
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: manufacturer_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: products
+            baseColumnNames: category_id
+            constraintName: fk_products_category
+            referencedTableName: categories
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: products
+            baseColumnNames: manufacturer_id
+            constraintName: fk_products_manufacturer
+            referencedTableName: manufacturers
+            referencedColumnNames: id
+
+  - changeSet:
+      id: 06-create-inventory-items
+      author: Artem
+      changes:
+        - createTable:
+            tableName: inventory_items
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: warehouse_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: supplier_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: received_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: received_quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: inventory_items
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
+            constraintName: fk_inventory_product
+        - addForeignKeyConstraint:
+            baseTableName: inventory_items
+            baseColumnNames: warehouse_id
+            referencedTableName: warehouses
+            referencedColumnNames: id
+            constraintName: fk_inventory_warehouse
+        - addForeignKeyConstraint:
+            baseTableName: inventory_items
+            baseColumnNames: supplier_id
+            referencedTableName: suppliers
+            referencedColumnNames: id
+            constraintName: fk_inventory_supplier
+
+  - changeSet:
+      id: 07-create-stocks
+      author: Artem
+      changes:
+        - createTable:
+            tableName: stocks
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: warehouse_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: stocks
+            columnNames: warehouse_id, product_id
+            constraintName: uq_stocks_warehouse_product
+        - addForeignKeyConstraint:
+            baseTableName: stocks
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
+            constraintName: fk_stocks_product
+        - addForeignKeyConstraint:
+            baseTableName: stocks
+            baseColumnNames: warehouse_id
+            referencedTableName: warehouses
+            referencedColumnNames: id
+            constraintName: fk_stocks_warehouse

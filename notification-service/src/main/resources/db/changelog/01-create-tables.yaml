@@ -1,0 +1,206 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-create-delivery-channels
+      author: Artem
+      changes:
+        - createTable:
+            tableName: delivery_channels
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: channel_type
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 02-create-notification-events
+      author: Artem
+      changes:
+        - createTable:
+            tableName: notification_events
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: event_code
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 03-create-notification-templates
+      author: Artem
+      changes:
+        - createTable:
+            tableName: notification_templates
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: language_code
+                  type: VARCHAR(5)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subject
+                  type: VARCHAR(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: body
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: channel_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: notification_templates
+            columnNames: event_id, channel_id, language_code, version
+            constraintName: uq_notification_template
+        - addForeignKeyConstraint:
+            baseTableName: notification_templates
+            baseColumnNames: event_id
+            referencedTableName: notification_events
+            referencedColumnNames: id
+            constraintName: fk_template_event
+        - addForeignKeyConstraint:
+            baseTableName: notification_templates
+            baseColumnNames: channel_id
+            referencedTableName: delivery_channels
+            referencedColumnNames: id
+            constraintName: fk_template_channel
+
+  - changeSet:
+      id: 04-create-user-notifications
+      author: Artem
+      changes:
+        - createTable:
+            tableName: user_notifications
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: recipient_identifier
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subject
+                  type: VARCHAR(150)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: preview_text
+                  type: VARCHAR(300)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: body
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: template_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: channel_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_notifications
+            baseColumnNames: template_id
+            referencedTableName: notification_templates
+            referencedColumnNames: id
+            constraintName: fk_user_notification_template
+        - addForeignKeyConstraint:
+            baseTableName: user_notifications
+            baseColumnNames: channel_id
+            referencedTableName: delivery_channels
+            referencedColumnNames: id
+            constraintName: fk_user_notification_channel
+
+  - changeSet:
+      id: 05-create-user-subscriptions
+      author: Artem
+      changes:
+        - createTable:
+            tableName: user_subscriptions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: channel_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_subscriptions
+            baseColumnNames: event_id
+            referencedTableName: notification_events
+            referencedColumnNames: id
+            constraintName: fk_subscription_event
+        - addForeignKeyConstraint:
+            baseTableName: user_subscriptions
+            baseColumnNames: channel_id
+            referencedTableName: delivery_channels
+            referencedColumnNames: id
+            constraintName: fk_subscription_channel

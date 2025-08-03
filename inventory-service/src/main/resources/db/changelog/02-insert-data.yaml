@@ -1,0 +1,238 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-data
+      author: Artem
+
+      changes:
+
+        - insert:
+            tableName: manufacturers
+            columns:
+              - column: { name: name, value: "Apple" }
+        - insert:
+            tableName: manufacturers
+            columns:
+              - column: { name: name, value: "Samsung" }
+        - insert:
+            tableName: manufacturers
+            columns:
+              - column: { name: name, value: "Sony" }
+        - insert:
+            tableName: manufacturers
+            columns:
+              - column: { name: name, value: "Huawei" }
+        - insert:
+            tableName: manufacturers
+            columns:
+              - column: { name: name, value: "Dell" }
+
+        - insert:
+            tableName: categories
+            columns:
+              - column: { name: name, value: "Телефоны" }
+        - insert:
+            tableName: categories
+            columns:
+              - column: { name: name, value: "Умные часы" }
+        - insert:
+            tableName: categories
+            columns:
+              - column: { name: name, value: "Ноутбуки" }
+        - insert:
+            tableName: categories
+            columns:
+              - column: { name: name, value: "Планшеты" }
+        - insert:
+            tableName: categories
+            columns:
+              - column: { name: name, value: "Наушники" }
+
+        - insert:
+            tableName: warehouses
+            columns:
+              - column: { name: city, value: "Москва" }
+              - column: { name: street, value: "Пушкина" }
+              - column: { name: house, value: "1А" }
+              - column: { name: postal_code, value: "101000" }
+
+        - insert:
+            tableName: warehouses
+            columns:
+              - column: { name: city, value: "Санкт-Петербург" }
+              - column: { name: street, value: "Пушкина" }
+              - column: { name: house, value: "12В" }
+              - column: { name: postal_code, value: "191025" }
+
+        - insert:
+            tableName: warehouses
+            columns:
+              - column: { name: city, value: "Казань" }
+              - column: { name: street, value: "Пушкина" }
+              - column: { name: house, value: "7" }
+              - column: { name: postal_code, value: "420111" }
+
+        - insert:
+            tableName: warehouses
+            columns:
+              - column: { name: city, value: "Новосибирск" }
+              - column: { name: street, value: "Пушкина" }
+              - column: { name: house, value: "19" }
+              - column: { name: postal_code, value: "630099" }
+
+        - insert:
+            tableName: warehouses
+            columns:
+              - column: { name: city, value: "Екатеринбург" }
+              - column: { name: street, value: "Пушкина" }
+              - column: { name: house, value: "5" }
+              - column: { name: postal_code, value: "620014" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "iPhone 15 Pro" }
+              - column: { name: price, valueNumeric: 100000 }
+              - column: { name: category_id, valueNumeric: 1 }
+              - column: { name: manufacturer_id, valueNumeric: 1 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "Galaxy S24 Ultra" }
+              - column: { name: price, valueNumeric: 90000 }
+              - column: { name: category_id, valueNumeric: 1 }
+              - column: { name: manufacturer_id, valueNumeric: 2 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "Xperia 1 V" }
+              - column: { name: price, valueNumeric: 80000 }
+              - column: { name: category_id, valueNumeric: 1 }
+              - column: { name: manufacturer_id, valueNumeric: 3 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "iPad Air 6" }
+              - column: { name: price, valueNumeric: 60000 }
+              - column: { name: category_id, valueNumeric: 4 }
+              - column: { name: manufacturer_id, valueNumeric: 1 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "MatePad Pro" }
+              - column: { name: price, valueNumeric: 55000 }
+              - column: { name: category_id, valueNumeric: 4 }
+              - column: { name: manufacturer_id, valueNumeric: 4 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "MacBook Pro M3" }
+              - column: { name: price, valueNumeric: 170000 }
+              - column: { name: category_id, valueNumeric: 3 }
+              - column: { name: manufacturer_id, valueNumeric: 1 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "Dell XPS 15" }
+              - column: { name: price, valueNumeric: 150000 }
+              - column: { name: category_id, valueNumeric: 3 }
+              - column: { name: manufacturer_id, valueNumeric: 5 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "Apple Watch Series 9" }
+              - column: { name: price, valueNumeric: 40000 }
+              - column: { name: category_id, valueNumeric: 2 }
+              - column: { name: manufacturer_id, valueNumeric: 1 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "Galaxy Watch 6" }
+              - column: { name: price, valueNumeric: 35000 }
+              - column: { name: category_id, valueNumeric: 2 }
+              - column: { name: manufacturer_id, valueNumeric: 2 }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: name, value: "Sony WH-1000XM5" }
+              - column: { name: price, valueNumeric: 35000 }
+              - column: { name: category_id, valueNumeric: 5 }
+              - column: { name: manufacturer_id, valueNumeric: 3 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 1 }
+              - column: { name: warehouse_id, valueNumeric: 1 }
+              - column: { name: quantity, valueNumeric: 20 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 2 }
+              - column: { name: warehouse_id, valueNumeric: 2 }
+              - column: { name: quantity, valueNumeric: 25 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 3 }
+              - column: { name: warehouse_id, valueNumeric: 3 }
+              - column: { name: quantity, valueNumeric: 12 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 4 }
+              - column: { name: warehouse_id, valueNumeric: 4 }
+              - column: { name: quantity, valueNumeric: 18 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 5 }
+              - column: { name: warehouse_id, valueNumeric: 5 }
+              - column: { name: quantity, valueNumeric: 15 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 6 }
+              - column: { name: warehouse_id, valueNumeric: 1 }
+              - column: { name: quantity, valueNumeric: 7 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 7 }
+              - column: { name: warehouse_id, valueNumeric: 2 }
+              - column: { name: quantity, valueNumeric: 10 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 8 }
+              - column: { name: warehouse_id, valueNumeric: 3 }
+              - column: { name: quantity, valueNumeric: 16 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 9 }
+              - column: { name: warehouse_id, valueNumeric: 5 }
+              - column: { name: quantity, valueNumeric: 14 }
+
+        - insert:
+            tableName: stocks
+            columns:
+              - column: { name: product_id, valueNumeric: 10 }
+              - column: { name: warehouse_id, valueNumeric: 4 }
+              - column: { name: quantity, valueNumeric: 30 }

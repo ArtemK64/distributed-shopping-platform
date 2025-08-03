@@ -1,0 +1,239 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $DB_USERNAME"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: postgres://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/postgres?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9187/metrics"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD-SHELL", "unset JMX_PORT; kafka-topics --bootstrap-server localhost:29092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8085:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: loki
+    command: -config.file=/etc/loki/loki.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/loki.yaml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3100/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: promtail
+    command: -config.file=/etc/promtail/promtail.yaml
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+      - ./monitoring/promtail-config.yaml:/etc/promtail/promtail.yaml:ro
+      - /etc/machine-id:/etc/machine-id:ro
+    depends_on:
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/ready"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/login"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8081:8081"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8082:8082"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8083:8083"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - order-service
+      - inventory-service
+      - notification-service
+    command: >
+      sh -c "
+        until nc -z order-service 8081; do sleep 2; done &&
+        until nc -z inventory-service 8082; do sleep 2; done &&
+        until nc -z notification-service 8083; do sleep 2; done &&
+        nginx -g 'daemon off;'
+      "
+
+volumes:
+  pgdata:
+  grafana-storage:
