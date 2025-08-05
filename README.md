@@ -440,3 +440,7 @@ docker-compose up --build
   </p>
 
 </details>
+
+## 3. Лицензия
+
+Проект распространяется под лицензией [MIT](LICENSE)
