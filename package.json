@@ -1,0 +1,19 @@
+{
+  "name": "distributed-shopping-platform",
+  "version": "1.0.0",
+  "scripts": {
+    "build:mfs": "npm run build:container && npm run build:inventory && npm run build:orders && npm run build:notifications",
+    "build:container": "cd microfrontends/container && npm run build",
+    "build:inventory": "cd inventory-mf && npm run build",
+    "build:orders": "cd orders-mf && npm run build",
+    "build:notifications": "cd notifications-mf && npm run build",
+    "dev:all": "concurrently \"npm run dev:container\" \"npm run dev:inventory\" \"npm run dev:orders\" \"npm run dev:notifications\"",
+    "dev:container": "cd microfrontends/container && npm run dev",
+    "dev:inventory": "cd inventory-mf && npm run dev",
+    "dev:orders": "cd orders-mf && npm run dev",
+    "dev:notifications": "cd notifications-mf && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

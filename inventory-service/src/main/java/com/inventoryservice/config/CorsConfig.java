@@ -16,10 +16,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:3001")
-                        .allowedMethods("GET")
-                        .allowedHeaders("Content-Type", "Accept")
-                        .allowCredentials(false)
+                        .allowedOrigins("http://localhost")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
                         .maxAge(3600);
             }
         };

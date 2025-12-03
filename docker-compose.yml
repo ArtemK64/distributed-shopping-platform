@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:17
     container_name: postgres
@@ -8,16 +7,19 @@ services:
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - ./init:/docker-entrypoint-initdb.d
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $DB_USERNAME"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - shopping-network
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter
@@ -29,17 +31,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9187/metrics"]
-      interval: 20s
-      timeout: 5s
-      retries: 5
+    networks:
+      - shopping-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: zookeeper
-    ports:
-      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -48,13 +45,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - shopping-network
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka
-    ports:
-      - "9092:9092"
-      - "29092:29092"
+    depends_on:
+      - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -63,13 +61,16 @@ services:
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    depends_on:
-      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
     healthcheck:
       test: ["CMD-SHELL", "unset JMX_PORT; kafka-topics --bootstrap-server localhost:29092 --list || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
+    networks:
+      - shopping-network
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -83,11 +84,8 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+    networks:
+      - shopping-network
 
   loki:
     image: grafana/loki:2.9.4
@@ -102,6 +100,8 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - shopping-network
 
   promtail:
     image: grafana/promtail:2.9.4
@@ -115,11 +115,8 @@ services:
     depends_on:
       loki:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9080"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    networks:
+      - shopping-network
 
   prometheus:
     image: prom/prometheus:v2.52.0
@@ -128,11 +125,8 @@ services:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/ready"]
-      interval: 20s
-      timeout: 5s
-      retries: 5
+    networks:
+      - shopping-network
 
   grafana:
     image: grafana/grafana:11.0.0
@@ -146,30 +140,27 @@ services:
       - grafana-storage:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
-      prometheus:
-        condition: service_healthy
-      loki:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/login"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      - prometheus
+      - loki
+    networks:
+      - shopping-network
 
   order-service:
-    build: ./order-service
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
     container_name: order-service
     env_file:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "8081:8081"
     depends_on:
       kafka:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    networks:
+      - shopping-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 30s
@@ -177,19 +168,21 @@ services:
       retries: 5
 
   inventory-service:
-    build: ./inventory-service
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
     container_name: inventory-service
     env_file:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "8082:8082"
     depends_on:
       kafka:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    networks:
+      - shopping-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 30s
@@ -197,43 +190,94 @@ services:
       retries: 5
 
   notification-service:
-    build: ./notification-service
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
     container_name: notification-service
     env_file:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "8083:8083"
     depends_on:
       kafka:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    networks:
+      - shopping-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 30s
       timeout: 5s
       retries: 5
 
-  frontend:
+  container:
     build:
-      context: ./frontend
-    container_name: frontend
+      context: ./microfrontends/container
+      dockerfile: Dockerfile
+    container_name: container
     ports:
-      - "3001:80"
+      - "5000:80"
+    networks:
+      - shopping-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  inventory-mf:
+    build:
+      context: ./inventory-mf
+      dockerfile: Dockerfile
+    container_name: inventory-mf
+    ports:
+      - "5001:80"
+    networks:
+      - shopping-network
+
+  orders-mf:
+    build:
+      context: ./orders-mf
+      dockerfile: Dockerfile
+    container_name: orders-mf
+    ports:
+      - "5002:80"
+    networks:
+      - shopping-network
+
+  notifications-mf:
+    build:
+      context: ./notifications-mf
+      dockerfile: Dockerfile
+    container_name: notifications-mf
+    ports:
+      - "5003:80"
+    networks:
+      - shopping-network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "80:80"
     depends_on:
+      - container
+      - inventory-mf
+      - orders-mf
+      - notifications-mf
       - order-service
       - inventory-service
       - notification-service
-    command: >
-      sh -c "
-        until nc -z order-service 8081; do sleep 2; done &&
-        until nc -z inventory-service 8082; do sleep 2; done &&
-        until nc -z notification-service 8083; do sleep 2; done &&
-        nginx -g 'daemon off;'
-      "
+    networks:
+      - shopping-network
 
 volumes:
   pgdata:
   grafana-storage:
+
+networks:
+  shopping-network:
+    driver: bridge
