@@ -31,18 +31,7 @@
     </header>
 
     <main class="content">
-      <div v-if="currentRoute === '/about'" class="about-page">
-        <h2>О проекте</h2>
-        <p>
-          Данный учебный проект представляет собой торговую платформу с возможностью оформления заказов, 
-          учета складских остатков и системой уведомлений. Пользователь выбирает товар, указывает адрес доставки 
-          и получает статус заказа.
-        </p>
-      </div>
-      
-      <div v-if="currentComponent && currentRoute !== '/about'">
-        <component :is="currentComponent" />
-      </div>
+      <component :is="currentComponent" />
     </main>
 
     <footer class="site-footer">
@@ -52,8 +41,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, shallowRef, defineAsyncComponent, watch } from 'vue'
+import { ref, onMounted, shallowRef } from 'vue'
 import { Icon } from '@iconify/vue'
+import AboutPage from './components/AboutPage.vue'
+
+import { defineAsyncComponent } from 'vue'
 
 const InventoryApp = defineAsyncComponent(() => import('inventory-mf/InventoryApp'))
 const OrdersApp = defineAsyncComponent(() => import('orders-mf/OrdersApp'))
@@ -127,6 +119,8 @@ async function loadComponentForRoute(route: string) {
     } catch (error) {
       console.error('Failed to load notifications app:', error)
     }
+  } else if (route === '/about') {
+    currentComponent.value = AboutPage
   }
 }
 
@@ -307,21 +301,6 @@ function navigateTo(path: string) {
   max-width: 960px;
   margin: 1rem auto 0;
   background-color: var(--color-background);
-}
-
-.about-page {
-  max-width: 800px;
-  margin: 0 auto;
-  font-size: 16px;
-  color: var(--color-text);
-  line-height: 1.8;
-  text-align: justify;
-  padding: 2rem;
-}
-
-.about-page h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
 }
 
 .site-footer {
