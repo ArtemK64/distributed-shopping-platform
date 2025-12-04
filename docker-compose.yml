@@ -211,6 +211,32 @@ services:
       timeout: 5s
       retries: 5
 
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "80:80"
+    networks:
+      - shopping-network
+    depends_on:
+      container:
+        condition: service_healthy
+      inventory-mf:
+        condition: service_healthy
+      orders-mf:
+        condition: service_healthy
+      notifications-mf:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
   container:
     build:
       context: ./microfrontends/container
@@ -221,58 +247,53 @@ services:
     networks:
       - shopping-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      test: ["CMD", "sh", "-c", "curl -f http://localhost/ || exit 1"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 3
+      start_period: 30s
 
   inventory-mf:
     build:
       context: ./inventory-mf
       dockerfile: Dockerfile
     container_name: inventory-mf
-    ports:
-      - "5001:80"
     networks:
       - shopping-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   orders-mf:
     build:
       context: ./orders-mf
       dockerfile: Dockerfile
     container_name: orders-mf
-    ports:
-      - "5002:80"
     networks:
       - shopping-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   notifications-mf:
     build:
       context: ./notifications-mf
       dockerfile: Dockerfile
     container_name: notifications-mf
-    ports:
-      - "5003:80"
     networks:
       - shopping-network
-
-  gateway:
-    build:
-      context: ./gateway
-      dockerfile: Dockerfile
-    container_name: gateway
-    ports:
-      - "80:80"
-    depends_on:
-      - container
-      - inventory-mf
-      - orders-mf
-      - notifications-mf
-      - order-service
-      - inventory-service
-      - notification-service
-    networks:
-      - shopping-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   pgdata:

@@ -39,7 +39,24 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      cors: true
+      cors: true,
+      proxy: {
+        '/inventory-mf': {
+          target: 'http://localhost:5001',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/inventory-mf/, '')
+        },
+        '/orders-mf': {
+          target: 'http://localhost:5002',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/orders-mf/, '')
+        },
+        '/notifications-mf': {
+          target: 'http://localhost:5003',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/notifications-mf/, '')
+        }
+      }
     }
   }
 })
