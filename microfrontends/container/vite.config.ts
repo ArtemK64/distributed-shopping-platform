@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         remotes: {
           'inventory-mf': '/inventory-mf/assets/remoteEntry.js',
           'orders-mf': '/orders-mf/assets/remoteEntry.js',
-          'notifications-mf': '/notifications-mf/assets/remoteEntry.js'
+          'notifications-mf': '/notifications-mf/assets/remoteEntry.js',
         },
         shared: ['vue']
       })

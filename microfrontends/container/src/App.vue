@@ -3,12 +3,12 @@
     <header class="top-nav">
       <div class="container">
         <div class="left-block">
-          <a href="/" class="site-title" @click.prevent="navigateTo('/inventory')">Торговая платформа</a>
+          <router-link to="/inventory" class="site-title">Торговая платформа</router-link>
           <nav class="main-nav">
-            <a href="#" @click.prevent="navigateTo('/inventory')" :class="{ active: currentRoute === '/inventory' }">Товары</a>
-            <a href="#" @click.prevent="navigateTo('/orders')" :class="{ active: currentRoute === '/orders' }">Заказать</a>
-            <a href="#" @click.prevent="navigateTo('/notifications')" :class="{ active: currentRoute === '/notifications' }">Уведомления</a>
-            <a href="#" @click.prevent="navigateTo('/about')" :class="{ active: currentRoute === '/about' }">О проекте</a>
+            <router-link to="/inventory" :class="{ active: $route.path === '/inventory' }">Товары</router-link>
+            <router-link to="/orders" :class="{ active: $route.path === '/orders' }">Заказать</router-link>
+            <router-link to="/notifications" :class="{ active: $route.path === '/notifications' }">Уведомления</router-link>
+            <router-link to="/about" :class="{ active: $route.path === '/about' }">О проекте</router-link>
           </nav>
           <button class="burger-button" @click="toggleMobileMenu" aria-label="Меню">
             <Icon :icon="menuIcon" />
@@ -22,16 +22,18 @@
 
       <div :class="{ 'mobile-nav-wrapper': true, open: mobileMenuOpen }">
         <nav v-if="mobileMenuOpen" class="mobile-nav">
-          <a href="#" @click.prevent="navigateTo('/inventory')" :class="{ active: currentRoute === '/inventory' }">Товары</a>
-          <a href="#" @click.prevent="navigateTo('/orders')" :class="{ active: currentRoute === '/orders' }">Заказать</a>
-          <a href="#" @click.prevent="navigateTo('/notifications')" :class="{ active: currentRoute === '/notifications' }">Уведомления</a>
-          <a href="#" @click.prevent="navigateTo('/about')" :class="{ active: currentRoute === '/about' }">О проекте</a>
+          <router-link to="/inventory" @click="toggleMobileMenu" :class="{ active: $route.path === '/inventory' }">Товары</router-link>
+          <router-link to="/orders" @click="toggleMobileMenu" :class="{ active: $route.path === '/orders' }">Заказать</router-link>
+          <router-link to="/notifications" @click="toggleMobileMenu" :class="{ active: $route.path === '/notifications' }">Уведомления</router-link>
+          <router-link to="/about" @click="toggleMobileMenu" :class="{ active: $route.path === '/about' }">О проекте</router-link>
         </nav>
       </div>
     </header>
 
     <main class="content">
-      <component :is="currentComponent" />
+      <router-view v-slot="{ Component }">
+        <component :is="Component" />
+      </router-view>
     </main>
 
     <footer class="site-footer">
@@ -41,20 +43,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, shallowRef } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import AboutPage from './components/AboutPage.vue'
-
-import { defineAsyncComponent } from 'vue'
-
-const InventoryApp = defineAsyncComponent(() => import('inventory-mf/InventoryApp'))
-const OrdersApp = defineAsyncComponent(() => import('orders-mf/OrdersApp'))
-const NotificationsApp = defineAsyncComponent(() => import('notifications-mf/NotificationsApp'))
 
 const theme = ref<'light' | 'dark'>('light')
 const mobileMenuOpen = ref(false)
-const currentComponent = shallowRef<any>(null)
-const currentRoute = ref(window.location.hash.replace('#', '') || '/inventory')
 
 const sunIcon = 'mdi:weather-sunny'
 const moonIcon = 'mdi:weather-night'
@@ -64,14 +57,6 @@ onMounted(() => {
   const saved = localStorage.getItem('theme')
   theme.value = saved === 'dark' ? 'dark' : 'light'
   applyTheme(theme.value)
-  
-  if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '#') {
-    window.location.hash = '/inventory'
-    currentRoute.value = '/inventory'
-  }
-  
-  updateRouteFromHash()
-  window.addEventListener('hashchange', updateRouteFromHash)
 })
 
 function toggleTheme() {
@@ -86,48 +71,6 @@ function applyTheme(value: string) {
 
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value
-}
-
-function updateRouteFromHash() {
-  const hash = window.location.hash.replace('#', '')
-  currentRoute.value = hash ? hash : '/inventory'
-  loadComponentForRoute(currentRoute.value)
-}
-
-async function loadComponentForRoute(route: string) {
-  console.log('Loading component for route:', route)
-  currentComponent.value = null
-  
-  if (route === '/inventory') {
-    try {
-      const module = await import('inventory-mf/InventoryApp')
-      currentComponent.value = module.default
-    } catch (error) {
-      console.error('Failed to load inventory app:', error)
-    }
-  } else if (route === '/orders') {
-    try {
-      const module = await import('orders-mf/OrdersApp')
-      currentComponent.value = module.default
-    } catch (error) {
-      console.error('Failed to load orders app:', error)
-    }
-  } else if (route === '/notifications') {
-    try {
-      const module = await import('notifications-mf/NotificationsApp')
-      currentComponent.value = module.default
-    } catch (error) {
-      console.error('Failed to load notifications app:', error)
-    }
-  } else if (route === '/about') {
-    currentComponent.value = AboutPage
-  }
-}
-
-function navigateTo(path: string) {
-  console.log('Navigating to:', path)
-  window.location.hash = path
-  mobileMenuOpen.value = false
 }
 </script>
 
