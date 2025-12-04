@@ -3,12 +3,12 @@
     <header class="top-nav">
       <div class="container">
         <div class="left-block">
-          <a href="/" class="site-title" @click.prevent="navigateTo('/')">Торговая платформа</a>
+          <a href="/" class="site-title" @click.prevent="navigateTo('/inventory')">Торговая платформа</a>
           <nav class="main-nav">
-            <a href="#" @click.prevent="navigateTo('/inventory')">Товары</a>
-            <a href="#" @click.prevent="navigateTo('/orders')">Заказать</a>
-            <a href="#" @click.prevent="navigateTo('/notifications')">Уведомления</a>
-            <a href="#" @click.prevent="navigateTo('/about')">О проекте</a>
+            <a href="#" @click.prevent="navigateTo('/inventory')" :class="{ active: currentRoute === '/inventory' }">Товары</a>
+            <a href="#" @click.prevent="navigateTo('/orders')" :class="{ active: currentRoute === '/orders' }">Заказать</a>
+            <a href="#" @click.prevent="navigateTo('/notifications')" :class="{ active: currentRoute === '/notifications' }">Уведомления</a>
+            <a href="#" @click.prevent="navigateTo('/about')" :class="{ active: currentRoute === '/about' }">О проекте</a>
           </nav>
           <button class="burger-button" @click="toggleMobileMenu" aria-label="Меню">
             <Icon :icon="menuIcon" />
@@ -22,16 +22,16 @@
 
       <div :class="{ 'mobile-nav-wrapper': true, open: mobileMenuOpen }">
         <nav v-if="mobileMenuOpen" class="mobile-nav">
-          <a href="#" @click.prevent="navigateTo('/inventory')">Товары</a>
-          <a href="#" @click.prevent="navigateTo('/orders')">Заказать</a>
-          <a href="#" @click.prevent="navigateTo('/notifications')">Уведомления</a>
-          <a href="#" @click.prevent="navigateTo('/about')">О проекте</a>
+          <a href="#" @click.prevent="navigateTo('/inventory')" :class="{ active: currentRoute === '/inventory' }">Товары</a>
+          <a href="#" @click.prevent="navigateTo('/orders')" :class="{ active: currentRoute === '/orders' }">Заказать</a>
+          <a href="#" @click.prevent="navigateTo('/notifications')" :class="{ active: currentRoute === '/notifications' }">Уведомления</a>
+          <a href="#" @click.prevent="navigateTo('/about')" :class="{ active: currentRoute === '/about' }">О проекте</a>
         </nav>
       </div>
     </header>
 
     <main class="content">
-      <div v-if="currentRoute === '/about' || currentRoute === ''" class="about-page">
+      <div v-if="currentRoute === '/about'" class="about-page">
         <h2>О проекте</h2>
         <p>
           Данный учебный проект представляет собой торговую платформу с возможностью оформления заказов, 
@@ -40,7 +40,7 @@
         </p>
       </div>
       
-      <div v-if="currentComponent && currentRoute !== '/about' && currentRoute !== ''">
+      <div v-if="currentComponent && currentRoute !== '/about'">
         <component :is="currentComponent" />
       </div>
     </main>
@@ -62,7 +62,7 @@ const NotificationsApp = defineAsyncComponent(() => import('notifications-mf/Not
 const theme = ref<'light' | 'dark'>('light')
 const mobileMenuOpen = ref(false)
 const currentComponent = shallowRef<any>(null)
-const currentRoute = ref(window.location.hash.replace('#', '') || '/')
+const currentRoute = ref(window.location.hash.replace('#', '') || '/inventory')
 
 const sunIcon = 'mdi:weather-sunny'
 const moonIcon = 'mdi:weather-night'
@@ -72,11 +72,14 @@ onMounted(() => {
   const saved = localStorage.getItem('theme')
   theme.value = saved === 'dark' ? 'dark' : 'light'
   applyTheme(theme.value)
+  
+  if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '#') {
+    window.location.hash = '/inventory'
+    currentRoute.value = '/inventory'
+  }
+  
   updateRouteFromHash()
-  
   window.addEventListener('hashchange', updateRouteFromHash)
-  
-  loadComponentForRoute(currentRoute.value)
 })
 
 function toggleTheme() {
@@ -95,11 +98,12 @@ function toggleMobileMenu() {
 
 function updateRouteFromHash() {
   const hash = window.location.hash.replace('#', '')
-  currentRoute.value = hash ? hash : '/'
+  currentRoute.value = hash ? hash : '/inventory'
   loadComponentForRoute(currentRoute.value)
 }
 
 async function loadComponentForRoute(route: string) {
+  console.log('Loading component for route:', route)
   currentComponent.value = null
   
   if (route === '/inventory') {
@@ -127,7 +131,8 @@ async function loadComponentForRoute(route: string) {
 }
 
 function navigateTo(path: string) {
-  window.location.hash = path === '/' ? '' : path
+  console.log('Navigating to:', path)
+  window.location.hash = path
   mobileMenuOpen.value = false
 }
 </script>
@@ -203,6 +208,10 @@ function navigateTo(path: string) {
   background-color: var(--color-background-mute);
 }
 
+.main-nav a.active {
+  background-color: var(--color-background-mute);
+}
+
 .theme-toggle {
   background: none;
   border: none;
@@ -251,6 +260,10 @@ function navigateTo(path: string) {
 
 .mobile-nav a:hover,
 .mobile-nav a:active {
+  background-color: var(--color-background-mute);
+}
+
+.mobile-nav a.active {
   background-color: var(--color-background-mute);
 }
 
