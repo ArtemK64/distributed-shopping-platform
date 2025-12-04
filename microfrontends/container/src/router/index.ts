@@ -11,16 +11,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/inventory'
-    },
-    {
-      path: '/inventory',
       name: 'inventory',
       component: InventoryApp
     },
     {
-      path: '/orders',
-      name: 'orders',
+      path: '/order',
+      name: 'order',
       component: OrdersApp
     },
     {

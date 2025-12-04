@@ -3,10 +3,10 @@
     <header class="top-nav">
       <div class="container">
         <div class="left-block">
-          <router-link to="/inventory" class="site-title">Торговая платформа</router-link>
+          <router-link to="/" class="site-title">Торговая платформа</router-link>
           <nav class="main-nav">
-            <router-link to="/inventory" :class="{ active: $route.path === '/inventory' }">Товары</router-link>
-            <router-link to="/orders" :class="{ active: $route.path === '/orders' }">Заказать</router-link>
+            <router-link to="/" :class="{ active: $route.path === '/' }">Товары</router-link>
+            <router-link to="/order" :class="{ active: $route.path === '/order' }">Заказать</router-link>
             <router-link to="/notifications" :class="{ active: $route.path === '/notifications' }">Уведомления</router-link>
             <router-link to="/about" :class="{ active: $route.path === '/about' }">О проекте</router-link>
           </nav>
@@ -22,8 +22,8 @@
 
       <div :class="{ 'mobile-nav-wrapper': true, open: mobileMenuOpen }">
         <nav v-if="mobileMenuOpen" class="mobile-nav">
-          <router-link to="/inventory" @click="toggleMobileMenu" :class="{ active: $route.path === '/inventory' }">Товары</router-link>
-          <router-link to="/orders" @click="toggleMobileMenu" :class="{ active: $route.path === '/orders' }">Заказать</router-link>
+          <router-link to="/" @click="toggleMobileMenu" :class="{ active: $route.path === '/' }">Товары</router-link>
+          <router-link to="/order" @click="toggleMobileMenu" :class="{ active: $route.path === '/order' }">Заказать</router-link>
           <router-link to="/notifications" @click="toggleMobileMenu" :class="{ active: $route.path === '/notifications' }">Уведомления</router-link>
           <router-link to="/about" @click="toggleMobileMenu" :class="{ active: $route.path === '/about' }">О проекте</router-link>
         </nav>
