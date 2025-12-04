@@ -16,11 +16,22 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true)
-                        .maxAge(3600);
+                        .allowedOrigins(
+                            "http://localhost",
+                            "http://localhost:5000",
+                            "http://localhost:5001",
+                            "http://localhost:5002",
+                            "http://localhost:5003"
+                        )
+                        .allowedMethods("GET", "OPTIONS")
+                        .allowedHeaders(
+                            "Origin",
+                            "Content-Type",
+                            "Accept",
+                            "X-Requested-With"
+                        )
+                        .allowCredentials(false)
+                        .maxAge(1800);
             }
         };
     }
